@@ -1,1 +1,33 @@
+$blue: #397EFB;
 
+.url-label {
+  width: 100%;
+  font-size: 18px;
+  font-weight: bold;
+  color: $blue;
+}
+
+.url-address {
+  margin-top: 4px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 4px;
+  border: 1px solid $blue;
+  border-radius: 4px;
+  resize: none;
+
+  &:focus {
+    transition: 0.4s;
+    outline: 1px solid $blue;
+  }
+}
+
+.file-info {
+  font-size: 18px;
+
+  span {
+    font-weight: bold;
+    color: $blue;
+  }
+}

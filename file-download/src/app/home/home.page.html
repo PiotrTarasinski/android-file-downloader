@@ -1,14 +1,30 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      Ionic Blank
+      File Downloader
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="ion-padding">
-    The world is your oyster.
-    <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
+    <label class="url-label">Url Address:</label>
+    <textarea
+    type="url"
+    value="{{fileUrl}}"
+    class="url-address"
+    rows="4"
+    [(ngModel)]="fileUrl"
+    ></textarea>
+    <ion-button expand="block" (click)="getFileInfo()">Download File Info</ion-button>
+    <p class="file-info"><span>File Size:</span> {{fileSize}}</p>
+    <p class="file-info"><span>File Type:</span> {{fileType}}</p>
+    <ion-button expand="block">Download File</ion-button>
+    <p class="file-info" *ngIf="progress"><span>Bytes Downloaded:</span> {{bytesDownloaded}}</p>
+    <ion-progress-bar
+    color="primary"
+    value="{{progress}}"
+    *ngIf="progress"
+    ></ion-progress-bar>
   </div>
 </ion-content>
