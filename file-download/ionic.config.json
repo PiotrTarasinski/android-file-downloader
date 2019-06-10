@@ -1,0 +1,7 @@
+{
+  "name": "file-download",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}
