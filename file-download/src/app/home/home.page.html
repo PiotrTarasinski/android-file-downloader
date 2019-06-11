@@ -23,7 +23,7 @@
     <p class="file-info" *ngIf="bytesDownloaded"><span>Downloaded:</span> {{(bytesDownloaded * 0.000001).toFixed(2) + '/' + (fileSize * 0.000001).toFixed(2) + ' Mb' }}</p>
     <ion-progress-bar
     color="primary"
-    value="{{progress}}"
+    [value]="progress"
     *ngIf="progress"
     ></ion-progress-bar>
   </div>

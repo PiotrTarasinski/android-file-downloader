@@ -4,6 +4,7 @@ import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ng
 import { File } from '@ionic-native/file/ngx';
 import { ToastController } from '@ionic/angular';
 import Swal from 'sweetalert2';
+import { NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -24,7 +25,8 @@ export class HomePage {
     private http: HTTP,
     public toastController: ToastController,
     private transfer: FileTransfer,
-    private file: File
+    private file: File,
+    private zone: NgZone,
   ) {}
 
 
@@ -51,25 +53,45 @@ export class HomePage {
       });
   }
 
-  downloadFile = async () => {
-    this.getFileInfo(false);
-    this.fileName = this.fileUrl.substring(this.fileUrl.lastIndexOf('/') + 1);
-    this.progress = 0;
-    this.fileTransfer.download(this.fileUrl, this.file.dataDirectory + this.fileName).then((entry) => {
-      console.log('download complete: ' + entry.toURL());
-      Swal.fire({
-        type: 'success',
-        title: 'Success',
-        text: 'Successfully downloaded file!',
-      });
-    }, (error) => {
-      console.log(error);
-    });
-    this.fileTransfer.onProgress((data) => {
-      this.bytesDownloaded = data.loaded;
-      this.progress = this.bytesDownloaded / this.fileSize;
-      console.log(this.progress);
+  downloadFile = () => {
+    Swal.fire({
+      title: 'Warning',
+      text: 'Are you sure you wanna download this file?',
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Download'
+    }).then((result) => {
+      if (result.value) {
+        this.getFileInfo(false);
+        this.fileName = this.fileUrl.substring(this.fileUrl.lastIndexOf('/') + 1);
+        this.progress = 0;
+        this.fileTransfer.download(this.fileUrl, this.file.dataDirectory + this.fileName).then((entry) => {
+          console.log('download complete: ' + entry.toURL());
+          Swal.fire({
+            type: 'success',
+            title: 'Success',
+            text: 'Successfully downloaded file!',
+          });
+        }, (error) => {
+            console.log(error);
+            Swal.fire({
+              type: 'error',
+              title: 'Oops...',
+              text: 'Something went wrong!',
+            });
+        });
+        this.fileTransfer.onProgress((data) => {
+          this.zone.run(() => {
+            this.bytesDownloaded = data.loaded;
+            this.progress = data.loaded / data.total;
+            console.log(this.progress);
+          });
+        });
+      }
     });
   }
+
 
 }
