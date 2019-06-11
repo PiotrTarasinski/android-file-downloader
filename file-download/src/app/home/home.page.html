@@ -16,10 +16,10 @@
     rows="4"
     [(ngModel)]="fileUrl"
     ></textarea>
-    <ion-button expand="block" (click)="getFileInfo()">Download File Info</ion-button>
-    <p class="file-info"><span>File Size:</span> {{fileSize}}</p>
+    <ion-button expand="block" (click)="getFileInfo(true)">Download File Info</ion-button>
+    <p class="file-info"><span>File Size:</span> {{fileSize? (fileSize * 0.000001).toFixed(2) + ' Mb' : ''}}</p>
     <p class="file-info"><span>File Type:</span> {{fileType}}</p>
-    <ion-button expand="block">Download File</ion-button>
+    <ion-button expand="block" (click)="downloadFile()">Download File</ion-button>
     <p class="file-info" *ngIf="progress"><span>Bytes Downloaded:</span> {{bytesDownloaded}}</p>
     <ion-progress-bar
     color="primary"
