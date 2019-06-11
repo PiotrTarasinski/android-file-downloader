@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { HTTP } from '@ionic-native/http/ngx';
+import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
+import { File } from '@ionic-native/file/ngx';
 import { ToastController } from '@ionic/angular';
 import Swal from 'sweetalert2';
 
@@ -15,17 +17,20 @@ export class HomePage {
   fileType = '';
   bytesDownloaded: number;
   progress: number;
+  fileName: string;
+  public fileTransfer: FileTransferObject = this.transfer.create();
 
   constructor(
     private http: HTTP,
-    public toastController: ToastController
+    public toastController: ToastController,
+    private transfer: FileTransfer,
+    private file: File
   ) {}
 
 
   getFileInfo = (showToast: boolean) => {
     this.http.head(this.fileUrl, {}, {})
       .then(async (data) => {
-        // this.fileSize = (data.headers['content-length'] * Math.pow(10, -6)).toFixed(2).toString() + ' Mb';
         this.fileSize = data.headers['content-length'];
         this.fileType = data.headers['content-type'];
         if (showToast) {
@@ -46,8 +51,25 @@ export class HomePage {
       });
   }
 
-  downloadFile = () => {
+  downloadFile = async () => {
     this.getFileInfo(false);
+    this.fileName = this.fileUrl.substring(this.fileUrl.lastIndexOf('/') + 1);
+    this.progress = 0;
+    this.fileTransfer.download(this.fileUrl, this.file.dataDirectory + this.fileName).then((entry) => {
+      console.log('download complete: ' + entry.toURL());
+      Swal.fire({
+        type: 'success',
+        title: 'Success',
+        text: 'Successfully downloaded file!',
+      });
+    }, (error) => {
+      console.log(error);
+    });
+    this.fileTransfer.onProgress((data) => {
+      this.bytesDownloaded = data.loaded;
+      this.progress = this.bytesDownloaded / this.fileSize;
+      console.log(this.progress);
+    });
   }
 
 }
