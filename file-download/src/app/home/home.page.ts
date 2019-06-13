@@ -1,10 +1,11 @@
+import { NgZone } from '@angular/core';
 import { Component } from '@angular/core';
 import { HTTP } from '@ionic-native/http/ngx';
 import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
 import { File } from '@ionic-native/file/ngx';
+import { AndroidPermissions } from '@ionic-native/android-permissions';
+import Swal, { SweetAlertType } from 'sweetalert2';
 import { ToastController } from '@ionic/angular';
-import Swal from 'sweetalert2';
-import { NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -19,6 +20,7 @@ export class HomePage {
   bytesDownloaded: number;
   progress: number;
   fileName: string;
+  canCancelDownload: boolean;
   public fileTransfer: FileTransferObject = this.transfer.create();
 
   constructor(
@@ -65,32 +67,53 @@ export class HomePage {
     }).then((result) => {
       if (result.value) {
         this.getFileInfo(false);
-        this.fileName = this.fileUrl.substring(this.fileUrl.lastIndexOf('/') + 1);
-        this.progress = 0;
-        this.fileTransfer.download(this.fileUrl, this.file.dataDirectory + this.fileName).then((entry) => {
-          console.log('download complete: ' + entry.toURL());
-          Swal.fire({
-            type: 'success',
-            title: 'Success',
-            text: 'Successfully downloaded file!',
-          });
-        }, (error) => {
-            console.log(error);
-            Swal.fire({
-              type: 'error',
-              title: 'Oops...',
-              text: 'Something went wrong!',
+        AndroidPermissions.requestPermission(AndroidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE)
+          .then(() => {
+            this.fileName = this.fileUrl.substring(this.fileUrl.lastIndexOf('/') + 1);
+            this.progress = 0;
+            this.canCancelDownload = true;
+            this.fileTransfer.download(this.fileUrl, this.file.externalRootDirectory + this.fileName).then((entry) => {
+              console.log('download complete: ' + entry.toURL());
+              this.canCancelDownload = false;
+              Swal.fire({
+                type: 'success',
+                title: 'Success',
+                text: 'Successfully downloaded file!',
+              });
+            }, (error) => {
+                console.log(error);
+                this.canCancelDownload = false;
+                let errorType: SweetAlertType = 'error';
+                let errorTitle = 'Oops...';
+                let errorMsg = 'Something went wrong!';
+                if (error.code === 4) {
+                  errorType = 'info';
+                  errorTitle = 'Canceled';
+                  errorMsg = 'File download canceled!';
+                } else if (error.code === 3) {
+                  errorMsg = 'No Internet connection!';
+                } else if (error.code === 2) {
+                  errorMsg = 'Invalid file url!';
+                }
+                Swal.fire({
+                  type: errorType,
+                  title: errorTitle,
+                  text: errorMsg,
+                });
             });
-        });
-        this.fileTransfer.onProgress((data) => {
-          this.zone.run(() => {
-            this.bytesDownloaded = data.loaded;
-            this.progress = data.loaded / data.total;
-            console.log(this.progress);
+            this.fileTransfer.onProgress((data) => {
+              this.zone.run(() => {
+                this.bytesDownloaded = data.loaded;
+                this.progress = data.loaded / data.total;
+              });
+            });
           });
-        });
       }
     });
+  }
+
+  cancelDownload = () => {
+    this.fileTransfer.abort();
   }
 
 
